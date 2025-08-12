@@ -5,148 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Search</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8f9fa;
-            height: 100vh;
-            overflow: hidden;
-        }
-        #search-page {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .logo {
-            font-size: 3rem;
-            font-weight: bold;
-            color: white;
-            margin-bottom: 2rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        .search-container {
-            width: 90%;
-            max-width: 600px;
-            position: relative;
-        }
-        .search-input {
-            width: 100%;
-            padding: 1rem 1.5rem;
-            font-size: 1.1rem;
-            border: none;
-            border-radius: 50px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        .search-input:focus {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
-        }
-        #chat-page {
-            display: none;
-            height: 100vh;
-            flex-direction: column;
-            background: white;
-        }
-        .chat-header {
-            background: #667eea;
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            font-weight: bold;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .chat-container {
-            flex: 1;
-            padding: 1rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .message {
-            max-width: 80%;
-            padding: 0.75rem 1rem;
-            border-radius: 18px;
-            word-wrap: break-word;
-        }
-        .user-message {
-            background: #667eea;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-        .ai-message {
-            background: #f1f3f5;
-            color: #333;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-            border-left: 3px solid #667eea;
-        }
-        .loading {
-            background: #f1f3f5;
-            color: #666;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-        .chat-input-container {
-            padding: 1rem;
-            background: white;
-            border-top: 1px solid #e9ecef;
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-        .chat-input {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e9ecef;
-            border-radius: 25px;
-            outline: none;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-        .chat-input:focus {
-            border-color: #667eea;
-        }
-        .send-button {
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .send-button:hover {
-            background: #5a67d8;
-            transform: scale(1.05);
-        }
-        .error-message {
-            background: #fed7d7;
-            color: #c53030;
-            border-left: 3px solid #e53e3e;
-            padding: 0.75rem;
-            border-radius: 4px;
-            margin: 0.5rem;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8f9fa; height: 100vh; overflow: hidden; }
+        #search-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .logo { font-size: 3rem; font-weight: bold; color: white; margin-bottom: 2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .search-container { width: 90%; max-width: 600px; position: relative; }
+        .search-input { width: 100%; padding: 1rem 1.5rem; font-size: 1.1rem; border: none; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); outline: none; transition: all 0.3s ease; }
+        .search-input:focus { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(0,0,0,0.15); }
+        #chat-page { display: none; height: 100vh; flex-direction: column; background: white; }
+        .chat-header { background: #667eea; color: white; padding: 1rem; text-align: center; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .chat-container { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
+        .message { max-width: 80%; padding: 0.75rem 1rem; border-radius: 18px; word-wrap: break-word; line-height: 1.5; }
+        .user-message { background: #667eea; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .ai-message { background: #f1f3f5; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; border-left: 3px solid #667eea; }
+        .loading { background: #f1f3f5; color: #666; align-self: flex-start; border-bottom-left-radius: 4px; animation: pulse 1.5s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+        .chat-input-container { padding: 1rem; background: white; border-top: 1px solid #e9ecef; display: flex; gap: 0.5rem; align-items: center; }
+        .chat-input { flex: 1; padding: 0.75rem 1rem; border: 2px solid #e9ecef; border-radius: 25px; outline: none; font-size: 1rem; transition: border-color 0.3s ease; }
+        .chat-input:focus { border-color: #667eea; }
+        .send-button { background: #667eea; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+        .send-button:hover { background: #5a67d8; transform: scale(1.05); }
+        .error-message { background: #fed7d7; color: #c53030; border-left: 3px solid #e53e3e; padding: 0.75rem 1rem; border-radius: 4px; margin: 0.5rem; }
     </style>
 </head>
 <body>
@@ -162,16 +41,15 @@
         <div class="chat-input-container">
             <input type="text" id="chat-input" class="chat-input" placeholder="Continue the conversation..." autocomplete="off">
             <button id="send-button" class="send-button">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22,2 15,22 11,13 2,9"></polygon>
-                </svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22,2 15,22 11,13 2,9"></polygon></svg>
             </button>
         </div>
     </div>
 
     <script>
-        const N8N_WEBHOOK_URL = 'https://hraiit.app.n8n.cloud/webhook/b3f7798e-cba1-4551-90ce-9193beb36ef0';
+        // --- THIS IS THE ONLY LINE YOU NEED TO EDIT ---
+        const N8N_WEBHOOK_URL = 'https://hraiit.app.n8n.cloud/webhook-test/b3f7798e-cba1-4551-90ce-9193beb36ef0';
+        
         let chatHistory = [];
         
         const searchPage = document.getElementById('search-page');
@@ -244,21 +122,17 @@
             addMessage(userMessage, true);
             const loadingMessage = addLoadingMessage();
             
-            // --- CHANGE 1: Use 'history' key instead of 'chatHistory' ---
             const requestBody = {
                 query: userMessage,
                 history: chatHistory 
             };
             
+            // Add the user's message to the history *before* sending, for the next turn
             chatHistory.push({ role: 'user', content: userMessage });
 
             try {
-                let response;
-                // We will use a reliable proxy directly to avoid CORS issues with n8n Cloud
-                const proxyUrl = 'https://api.allorigins.win/raw?url=';
-                const proxiedUrl = proxyUrl + encodeURIComponent(N8N_WEBHOOK_URL);
-
-                response = await fetch(proxiedUrl, {
+                // Directly call the n8n Test Webhook
+                const response = await fetch(N8N_WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody)
@@ -267,13 +141,13 @@
                 loadingMessage.remove();
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
                 }
                 
                 const data = await response.json();
                 
-                // --- CHANGE 2: Parse the n8n response format correctly ---
-                const aiResponse = data[0]?.json?.text || 'Sorry, I received an empty or invalid response.';
+                // Expect a JSON object like { "response": "The AI's answer..." }
+                const aiResponse = data.response || 'Sorry, I received an empty or invalid response.';
                 
                 addMessage(aiResponse);
                 chatHistory.push({ role: 'assistant', content: aiResponse });
