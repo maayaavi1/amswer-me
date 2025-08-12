@@ -5,217 +5,357 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Search</title>
     <style>
-        :root {
-            --background: #121212;
-            --text-primary: #e0e0e0;
-            --text-secondary: #b3b3b3;
-            --surface: #1e1e1e;
-            --primary: #bb86fc;
-            --input-bg: #2c2c2c;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--background);
-            color: var(--text-primary);
+        * {
             margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
             height: 100vh;
             overflow: hidden;
         }
-        .container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        /* --- Start Page Styles --- */
-        #start-page {
+
+        /* Search Page Styles */
+        #search-page {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100%;
-            text-align: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        #start-page h1 {
+
+        .logo {
             font-size: 3rem;
-            font-weight: 700;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-        #start-page .search-form {
+
+        .search-container {
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .search-input {
             width: 100%;
-            max-width: 580px;
-            margin-top: 2rem;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            outline: none;
+            transition: all 0.3s ease;
         }
-        #start-page .search-input {
-            width: 100%;
-            padding: 1rem;
-            border-radius: 2rem;
-            border: 1px solid var(--surface);
-            background-color: var(--input-bg);
-            color: var(--text-primary);
-            font-size: 1rem;
+
+        .search-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
         }
-        /* --- Chat Page Styles --- */
+
+        /* Chat Page Styles */
         #chat-page {
-            display: none; /* Hidden by default */
+            display: none;
+            height: 100vh;
             flex-direction: column;
-            height: 100%;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
+            background: white;
         }
-        #chat-container {
-            flex-grow: 1;
+
+        .chat-header {
+            background: #667eea;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chat-container {
+            flex: 1;
+            padding: 1rem;
             overflow-y: auto;
-            padding: 1rem;
-        }
-        .message {
-            margin-bottom: 1rem;
-            padding: 0.75rem 1rem;
-            border-radius: 0.75rem;
-            max-width: 80%;
-        }
-        .user-message {
-            background-color: var(--primary);
-            color: var(--background);
-            align-self: flex-end;
-            margin-left: auto;
-        }
-        .ai-message {
-            background-color: var(--surface);
-            align-self: flex-start;
-        }
-        #chat-form {
-            padding: 1rem;
             display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
-        #chat-input {
-            flex-grow: 1;
+
+        .message {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background: #667eea;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-message {
+            background: #f1f3f5;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            border-left: 3px solid #667eea;
+        }
+
+        .loading {
+            background: #f1f3f5;
+            color: #666;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .chat-input-container {
             padding: 1rem;
-            border-radius: 1rem;
-            border: 1px solid var(--surface);
-            background-color: var(--input-bg);
-            color: var(--text-primary);
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            outline: none;
             font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-button:hover {
+            background: #5a67d8;
+            transform: scale(1.05);
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            border-left: 3px solid #e53e3e;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin: 0.5rem;
         }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <!-- The Google-style homepage -->
-        <div id="start-page">
-            <h1>My Knowledge Base</h1>
-            <form id="start-form" class="search-form">
-                <input type="text" id="start-input" class="search-input" placeholder="Ask a question..." autocomplete="off">
-            </form>
+    <!-- Search Page -->
+    <div id="search-page">
+        <div class="logo">AI Search</div>
+        <div class="search-container">
+            <input 
+                type="text" 
+                id="first-search-input" 
+                class="search-input" 
+                placeholder="Ask me anything..."
+                autocomplete="off"
+            >
         </div>
+    </div>
 
-        <!-- The ChatGPT-style chat page -->
-        <div id="chat-page">
-            <div id="chat-container"></div>
-            <form id="chat-form">
-                <input type="text" id="chat-input" placeholder="Ask a follow-up..." autocomplete="off">
-            </form>
+    <!-- Chat Page -->
+    <div id="chat-page">
+        <div class="chat-header">AI Assistant</div>
+        <div class="chat-container" id="chat-container">
+            <!-- Messages will appear here -->
+        </div>
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="chat-input" 
+                class="chat-input" 
+                placeholder="Continue the conversation..."
+                autocomplete="off"
+            >
+            <button id="send-button" class="send-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22,2 15,22 11,13 2,9"></polygon>
+                </svg>
+            </button>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        const N8N_WEBHOOK_URL = 'https://cors-anywhere.herokuapp.com/https://hraiit.app.n8n.cloud/webhook/b3f7798e-cba1-4551-90ce-9193beb36ef0'; 
-
-        // --- ELEMENTS ---
-        const startPage = document.getElementById('start-page');
-        const chatPage = document.getElementById('chat-page');
-        const startForm = document.getElementById('start-form');
-        const startInput = document.getElementById('start-input');
-        const chatForm = document.getElementById('chat-form');
-        const chatInput = document.getElementById('chat-input');
-        const chatContainer = document.getElementById('chat-container');
-
-        // --- STATE ---
+        // Configuration - UPDATE THIS WITH YOUR n8n WEBHOOK URL
+        const N8N_WEBHOOK_URL = 'https://hraiit.app.n8n.cloud/webhook/b3f7798e-cba1-4551-90ce-9193beb36ef0';
+        
+        // Chat history
         let chatHistory = [];
+        
+        // DOM elements
+        const searchPage = document.getElementById('search-page');
+        const chatPage = document.getElementById('chat-page');
+        const firstSearchInput = document.getElementById('first-search-input');
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
 
-        // --- EVENT LISTENERS ---
-        startForm.addEventListener('submit', handleFirstMessage);
-        chatForm.addEventListener('submit', handleFollowUpMessage);
+        // Initialize
+        firstSearchInput.focus();
 
-        // --- FUNCTIONS ---
-        function handleFirstMessage(e) {
-            e.preventDefault();
-            const query = startInput.value.trim();
-            if (!query) return;
+        // Event listeners
+        firstSearchInput.addEventListener('keypress', handleFirstSearch);
+        chatInput.addEventListener('keypress', handleChatInput);
+        sendButton.addEventListener('click', handleSendClick);
 
-            // Transition UI
-            startPage.style.display = 'none';
-            chatPage.style.display = 'flex';
-
-            sendMessage(query);
-            startInput.value = '';
-        }
-
-        function handleFollowUpMessage(e) {
-            e.preventDefault();
-            const query = chatInput.value.trim();
-            if (!query) return;
-            
-            sendMessage(query);
-            chatInput.value = '';
-        }
-
-        async function sendMessage(query) {
-            // Add user message to UI and history
-            addUserMessageToUI(query);
-            chatHistory.push({ role: 'user', content: query });
-
-            // Show a temporary "thinking" message from AI
-            const thinkingMessageElement = addAiMessageToUI("Thinking...");
-
-            try {
-                const response = await fetch(N8N_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        query: query,
-                        history: chatHistory.slice(0, -1) // Send history *before* this new message
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`API error: ${response.statusText}`);
-                }
-
-                const aiResponseText = await response.text();
-
-                // Update the "thinking" message with the real response
-                thinkingMessageElement.innerText = aiResponseText;
-
-                // Add the real AI response to history
-                chatHistory.push({ role: 'model', content: aiResponseText });
-
-            } catch (error) {
-                thinkingMessageElement.innerText = `Error: ${error.message}`;
-                console.error('Failed to fetch AI response:', error);
+        function handleFirstSearch(e) {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+                const query = e.target.value.trim();
+                switchToChat();
+                sendMessage(query);
             }
         }
 
-        function addUserMessageToUI(text) {
-            const messageElement = document.createElement('div');
-            messageElement.className = 'message user-message';
-            messageElement.innerText = text;
-            chatContainer.appendChild(messageElement);
+        function handleChatInput(e) {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+                const query = e.target.value.trim();
+                sendMessage(query);
+                e.target.value = '';
+            }
+        }
+
+        function handleSendClick() {
+            const query = chatInput.value.trim();
+            if (query) {
+                sendMessage(query);
+                chatInput.value = '';
+            }
+        }
+
+        function switchToChat() {
+            searchPage.style.display = 'none';
+            chatPage.style.display = 'flex';
+            chatInput.focus();
+        }
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+            messageDiv.textContent = content;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return messageDiv;
+        }
+
+        function addLoadingMessage() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message loading';
+            loadingDiv.textContent = 'AI is thinking...';
+            chatContainer.appendChild(loadingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return loadingDiv;
+        }
+
+        function addErrorMessage(error) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = `Error: ${error}. Please try again.`;
+            chatContainer.appendChild(errorDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        function addAiMessageToUI(text) {
-            const messageElement = document.createElement('div');
-            messageElement.className = 'message ai-message';
-            messageElement.innerText = text;
-            chatContainer.appendChild(messageElement);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            return messageElement;
+        async function sendMessage(userMessage) {
+            // Add user message to chat
+            addMessage(userMessage, true);
+            
+            // Add to chat history
+            chatHistory.push({ role: 'user', content: userMessage });
+            
+            // Show loading
+            const loadingMessage = addLoadingMessage();
+            
+            try {
+                // Try multiple methods to handle CORS
+                let response;
+                
+                // Method 1: Direct call (works if n8n has CORS enabled)
+                try {
+                    response = await fetch(N8N_WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            query: userMessage,
+                            chatHistory: chatHistory
+                        })
+                    });
+                } catch (corsError) {
+                    console.log('Direct call failed, trying proxy...');
+                    
+                    // Method 2: Use allorigins proxy
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                    const proxiedUrl = proxyUrl + encodeURIComponent(N8N_WEBHOOK_URL);
+                    
+                    response = await fetch(proxiedUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            query: userMessage,
+                            chatHistory: chatHistory
+                        })
+                    });
+                }
+                
+                // Remove loading message
+                loadingMessage.remove();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Extract AI response (adjust this based on your n8n workflow output structure)
+                let aiResponse = data.response || data.answer || data.message || 'Sorry, I received an empty response.';
+                
+                // Add AI response to chat
+                addMessage(aiResponse);
+                
+                // Add to chat history
+                chatHistory.push({ role: 'assistant', content: aiResponse });
+                
+            } catch (error) {
+                console.error('Error:', error);
+                loadingMessage.remove();
+                addErrorMessage(error.message);
+            }
         }
     </script>
 </body>
