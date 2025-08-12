@@ -10,15 +10,12 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f8f9fa;
             height: 100vh;
             overflow: hidden;
         }
-
-        /* Search Page Styles */
         #search-page {
             display: flex;
             flex-direction: column;
@@ -27,7 +24,6 @@
             height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-
         .logo {
             font-size: 3rem;
             font-weight: bold;
@@ -35,13 +31,11 @@
             margin-bottom: 2rem;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-
         .search-container {
             width: 90%;
             max-width: 600px;
             position: relative;
         }
-
         .search-input {
             width: 100%;
             padding: 1rem 1.5rem;
@@ -52,20 +46,16 @@
             outline: none;
             transition: all 0.3s ease;
         }
-
         .search-input:focus {
             transform: translateY(-2px);
             box-shadow: 0 6px 25px rgba(0,0,0,0.15);
         }
-
-        /* Chat Page Styles */
         #chat-page {
             display: none;
             height: 100vh;
             flex-direction: column;
             background: white;
         }
-
         .chat-header {
             background: #667eea;
             color: white;
@@ -74,7 +64,6 @@
             font-weight: bold;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
         .chat-container {
             flex: 1;
             padding: 1rem;
@@ -83,21 +72,18 @@
             flex-direction: column;
             gap: 1rem;
         }
-
         .message {
             max-width: 80%;
             padding: 0.75rem 1rem;
             border-radius: 18px;
             word-wrap: break-word;
         }
-
         .user-message {
             background: #667eea;
             color: white;
             align-self: flex-end;
             border-bottom-right-radius: 4px;
         }
-
         .ai-message {
             background: #f1f3f5;
             color: #333;
@@ -105,7 +91,6 @@
             border-bottom-left-radius: 4px;
             border-left: 3px solid #667eea;
         }
-
         .loading {
             background: #f1f3f5;
             color: #666;
@@ -113,12 +98,10 @@
             border-bottom-left-radius: 4px;
             animation: pulse 1.5s ease-in-out infinite;
         }
-
         @keyframes pulse {
             0%, 100% { opacity: 0.7; }
             50% { opacity: 1; }
         }
-
         .chat-input-container {
             padding: 1rem;
             background: white;
@@ -127,7 +110,6 @@
             gap: 0.5rem;
             align-items: center;
         }
-
         .chat-input {
             flex: 1;
             padding: 0.75rem 1rem;
@@ -137,11 +119,9 @@
             font-size: 1rem;
             transition: border-color 0.3s ease;
         }
-
         .chat-input:focus {
             border-color: #667eea;
         }
-
         .send-button {
             background: #667eea;
             color: white;
@@ -155,12 +135,10 @@
             align-items: center;
             justify-content: center;
         }
-
         .send-button:hover {
             background: #5a67d8;
             transform: scale(1.05);
         }
-
         .error-message {
             background: #fed7d7;
             color: #c53030;
@@ -172,34 +150,17 @@
     </style>
 </head>
 <body>
-    <!-- Search Page -->
     <div id="search-page">
         <div class="logo">AI Search</div>
         <div class="search-container">
-            <input 
-                type="text" 
-                id="first-search-input" 
-                class="search-input" 
-                placeholder="Ask me anything..."
-                autocomplete="off"
-            >
+            <input type="text" id="first-search-input" class="search-input" placeholder="Ask me anything..." autocomplete="off">
         </div>
     </div>
-
-    <!-- Chat Page -->
     <div id="chat-page">
         <div class="chat-header">AI Assistant</div>
-        <div class="chat-container" id="chat-container">
-            <!-- Messages will appear here -->
-        </div>
+        <div class="chat-container" id="chat-container"></div>
         <div class="chat-input-container">
-            <input 
-                type="text" 
-                id="chat-input" 
-                class="chat-input" 
-                placeholder="Continue the conversation..."
-                autocomplete="off"
-            >
+            <input type="text" id="chat-input" class="chat-input" placeholder="Continue the conversation..." autocomplete="off">
             <button id="send-button" class="send-button">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -210,13 +171,9 @@
     </div>
 
     <script>
-        // Configuration - UPDATE THIS WITH YOUR n8n WEBHOOK URL
         const N8N_WEBHOOK_URL = 'https://hraiit.app.n8n.cloud/webhook/b3f7798e-cba1-4551-90ce-9193beb36ef0';
-        
-        // Chat history
         let chatHistory = [];
         
-        // DOM elements
         const searchPage = document.getElementById('search-page');
         const chatPage = document.getElementById('chat-page');
         const firstSearchInput = document.getElementById('first-search-input');
@@ -224,26 +181,21 @@
         const chatInput = document.getElementById('chat-input');
         const sendButton = document.getElementById('send-button');
 
-        // Initialize
         firstSearchInput.focus();
-
-        // Event listeners
         firstSearchInput.addEventListener('keypress', handleFirstSearch);
         chatInput.addEventListener('keypress', handleChatInput);
         sendButton.addEventListener('click', handleSendClick);
 
         function handleFirstSearch(e) {
             if (e.key === 'Enter' && e.target.value.trim()) {
-                const query = e.target.value.trim();
                 switchToChat();
-                sendMessage(query);
+                sendMessage(e.target.value.trim());
             }
         }
 
         function handleChatInput(e) {
             if (e.key === 'Enter' && e.target.value.trim()) {
-                const query = e.target.value.trim();
-                sendMessage(query);
+                sendMessage(e.target.value.trim());
                 e.target.value = '';
             }
         }
@@ -289,51 +241,29 @@
         }
 
         async function sendMessage(userMessage) {
-            // Add user message to chat
             addMessage(userMessage, true);
-            
-            // Add to chat history
-            chatHistory.push({ role: 'user', content: userMessage });
-            
-            // Show loading
             const loadingMessage = addLoadingMessage();
             
+            // --- CHANGE 1: Use 'history' key instead of 'chatHistory' ---
+            const requestBody = {
+                query: userMessage,
+                history: chatHistory 
+            };
+            
+            chatHistory.push({ role: 'user', content: userMessage });
+
             try {
-                // Try multiple methods to handle CORS
                 let response;
+                // We will use a reliable proxy directly to avoid CORS issues with n8n Cloud
+                const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                const proxiedUrl = proxyUrl + encodeURIComponent(N8N_WEBHOOK_URL);
+
+                response = await fetch(proxiedUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
                 
-                // Method 1: Direct call (works if n8n has CORS enabled)
-                try {
-                    response = await fetch(N8N_WEBHOOK_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            query: userMessage,
-                            chatHistory: chatHistory
-                        })
-                    });
-                } catch (corsError) {
-                    console.log('Direct call failed, trying proxy...');
-                    
-                    // Method 2: Use allorigins proxy
-                    const proxyUrl = 'https://api.allorigins.win/raw?url=';
-                    const proxiedUrl = proxyUrl + encodeURIComponent(N8N_WEBHOOK_URL);
-                    
-                    response = await fetch(proxiedUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            query: userMessage,
-                            chatHistory: chatHistory
-                        })
-                    });
-                }
-                
-                // Remove loading message
                 loadingMessage.remove();
                 
                 if (!response.ok) {
@@ -342,13 +272,10 @@
                 
                 const data = await response.json();
                 
-                // Extract AI response (adjust this based on your n8n workflow output structure)
-                let aiResponse = data.response || data.answer || data.message || 'Sorry, I received an empty response.';
+                // --- CHANGE 2: Parse the n8n response format correctly ---
+                const aiResponse = data[0]?.json?.text || 'Sorry, I received an empty or invalid response.';
                 
-                // Add AI response to chat
                 addMessage(aiResponse);
-                
-                // Add to chat history
                 chatHistory.push({ role: 'assistant', content: aiResponse });
                 
             } catch (error) {
