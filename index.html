@@ -144,13 +144,14 @@
                     throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
                 }
                 
-                const data = await response.json();
-                
-                // Expect a JSON object like { "response": "The AI's answer..." }
-                const aiResponse = data.response || 'Sorry, I received an empty or invalid response.';
-                
-                addMessage(aiResponse);
-                chatHistory.push({ role: 'assistant', content: aiResponse });
+               const aiResponse = await response.text(); // Get the response as plain text
+
+if (!aiResponse) {
+    throw new Error('Received an empty response.');
+}
+
+addMessage(aiResponse);
+chatHistory.push({ role: 'assistant', content: aiResponse });
                 
             } catch (error) {
                 console.error('Error:', error);
