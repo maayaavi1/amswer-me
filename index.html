@@ -46,119 +46,125 @@
         </div>
     </div>
 
-    <script>
-        // --- THIS IS THE ONLY LINE YOU NEED TO EDIT ---
-        const N8N_WEBHOOK_URL = 'https://hraiit.app.n8n.cloud/webhook/93ac27e6-2454-4a5a-a7c6-d2f1c33f3a81';
+<script>
+    // --- THIS IS THE ONLY LINE YOU NEED TO EDIT ---
+    const N8N_WEBHOOK_URL = 'https://hraiit.app.n8n.cloud/webhook/b7fb711b-885b-4ca6-bfd2-62e8754a460a'; // Use your PRODUCTION webhook URL here
+    
+    // This array will correctly store the full conversation
+    let chatHistory = [];
+    
+    const searchPage = document.getElementById('search-page');
+    const chatPage = document.getElementById('chat-page');
+    const firstSearchInput = document.getElementById('first-search-input');
+    const chatContainer = document.getElementById('chat-container');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+
+    firstSearchInput.focus();
+    firstSearchInput.addEventListener('keypress', handleFirstSearch);
+    chatInput.addEventListener('keypress', handleChatInput);
+    sendButton.addEventListener('click', handleSendClick);
+
+    function handleFirstSearch(e) {
+        if (e.key === 'Enter' && e.target.value.trim()) {
+            switchToChat();
+            sendMessage(e.target.value.trim());
+        }
+    }
+
+    function handleChatInput(e) {
+        if (e.key === 'Enter' && e.target.value.trim()) {
+            sendMessage(e.target.value.trim());
+            e.target.value = '';
+        }
+    }
+
+    function handleSendClick() {
+        const query = chatInput.value.trim();
+        if (query) {
+            sendMessage(query);
+            chatInput.value = '';
+        }
+    }
+
+    function switchToChat() {
+        searchPage.style.display = 'none';
+        chatPage.style.display = 'flex';
+        chatInput.focus();
+    }
+
+    function addMessage(content, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+        messageDiv.textContent = content;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        return messageDiv;
+    }
+
+    function addLoadingMessage() {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message loading';
+        loadingDiv.textContent = 'AI is thinking...';
+        chatContainer.appendChild(loadingDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        return loadingDiv;
+    }
+
+    function addErrorMessage(error) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = `Error: ${error}. Please try again.`;
+        chatContainer.appendChild(errorDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    async function sendMessage(userMessage) {
+        addMessage(userMessage, true);
+        const loadingMessage = addLoadingMessage();
         
-        let chatHistory = [];
-        
-        const searchPage = document.getElementById('search-page');
-        const chatPage = document.getElementById('chat-page');
-        const firstSearchInput = document.getElementById('first-search-input');
-        const chatContainer = document.getElementById('chat-container');
-        const chatInput = document.getElementById('chat-input');
-        const sendButton = document.getElementById('send-button');
+        // Add the user's new message to the history BEFORE sending
+        chatHistory.push({ role: 'user', content: userMessage });
 
-        firstSearchInput.focus();
-        firstSearchInput.addEventListener('keypress', handleFirstSearch);
-        chatInput.addEventListener('keypress', handleChatInput);
-        sendButton.addEventListener('click', handleSendClick);
+        const requestBody = {
+            query: userMessage,
+            // Send the ENTIRE conversation history
+            history: chatHistory 
+        };
 
-        function handleFirstSearch(e) {
-            if (e.key === 'Enter' && e.target.value.trim()) {
-                switchToChat();
-                sendMessage(e.target.value.trim());
-            }
-        }
-
-        function handleChatInput(e) {
-            if (e.key === 'Enter' && e.target.value.trim()) {
-                sendMessage(e.target.value.trim());
-                e.target.value = '';
-            }
-        }
-
-        function handleSendClick() {
-            const query = chatInput.value.trim();
-            if (query) {
-                sendMessage(query);
-                chatInput.value = '';
-            }
-        }
-
-        function switchToChat() {
-            searchPage.style.display = 'none';
-            chatPage.style.display = 'flex';
-            chatInput.focus();
-        }
-
-        function addMessage(content, isUser = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
-            messageDiv.textContent = content;
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            return messageDiv;
-        }
-
-        function addLoadingMessage() {
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'message loading';
-            loadingDiv.textContent = 'AI is thinking...';
-            chatContainer.appendChild(loadingDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            return loadingDiv;
-        }
-
-        function addErrorMessage(error) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            errorDiv.textContent = `Error: ${error}. Please try again.`;
-            chatContainer.appendChild(errorDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        async function sendMessage(userMessage) {
-            addMessage(userMessage, true);
-            const loadingMessage = addLoadingMessage();
+        try {
+            const response = await fetch(N8N_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
             
-            const requestBody = {
-                query: userMessage,
-                history: chatHistory 
-            };
+            loadingMessage.remove();
             
-            // Add the user's message to the history *before* sending, for the next turn
-            chatHistory.push({ role: 'user', content: userMessage });
-
-            try {
-                // Directly call the n8n Test Webhook
-                const response = await fetch(N8N_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                });
-                
-                loadingMessage.remove();
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
-                }
-                
-               const aiResponse = await response.text(); // Get the response as plain text
-
-if (!aiResponse) {
-    throw new Error('Received an empty response.');
-}
-
-addMessage(aiResponse);
-chatHistory.push({ role: 'assistant', content: aiResponse });
-                
-            } catch (error) {
-                console.error('Error:', error);
-                loadingMessage.remove();
-                addErrorMessage(error.message);
+            if (!response.ok) {
+                // If there's an error, remove the user message we optimistically added
+                chatHistory.pop();
+                throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
             }
+            
+            const aiResponse = await response.text();
+            
+            if (!aiResponse) {
+                chatHistory.pop(); // Also remove user message on empty response
+                throw new Error('Received an empty response.');
+            }
+            
+            addMessage(aiResponse);
+
+            // IMPORTANT: Add the AI's response to the history so it's included in the next turn
+            chatHistory.push({ role: 'assistant', content: aiResponse });
+            
+        } catch (error) {
+            console.error('Error:', error);
+            loadingMessage.remove();
+            addErrorMessage(error.message);
         }
-    </script>
+    }
+</script>
 </body>
 </html>
