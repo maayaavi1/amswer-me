@@ -95,10 +95,10 @@
     </div>
 
 <script>
-    const N8N_WEBHOOK_URL = 'YOUR_PRODUCTION_WEBHOOK_URL_HERE';
+    const N8N_WEBHOOK_URL = 'https://hraiit.app.n8n.cloud/webhook/b7fb711b-885b-4ca6-bfd2-62e8754a460a'; // <-- IMPORTANT: Make sure you put your real n8n webhook URL here
     let chatHistory = [];
     
-    // --- All your element getters are here (no changes) ---
+    // --- Element Getters ---
     const searchPage = document.getElementById('search-page');
     const chatPage = document.getElementById('chat-page');
     const firstSearchInput = document.getElementById('first-search-input');
@@ -106,19 +106,19 @@
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
 
-    // --- All your event listeners are here (no changes) ---
+    // --- Event Listeners ---
     firstSearchInput.focus();
     firstSearchInput.addEventListener('keypress', handleFirstSearch);
     chatInput.addEventListener('keypress', handleChatInput);
     sendButton.addEventListener('click', handleSendClick);
 
-    // --- All your handler functions are here (no changes) ---
+    // --- Handler Functions ---
     function handleFirstSearch(e) { if (e.key === 'Enter' && e.target.value.trim()) { switchToChat(); sendMessage(e.target.value.trim()); } }
     function handleChatInput(e) { if (e.key === 'Enter' && e.target.value.trim()) { sendMessage(e.target.value.trim()); e.target.value = ''; } }
     function handleSendClick() { const query = chatInput.value.trim(); if (query) { sendMessage(query); chatInput.value = ''; } }
     function switchToChat() { searchPage.style.display = 'none'; chatPage.style.display = 'flex'; chatInput.focus(); }
 
-    // --- UPDATED addMessage FUNCTION ---
+    // --- Message Display Functions (with Button logic) ---
     function addMessage(content, isUser = false, sources = []) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
@@ -145,36 +145,32 @@
             if (sources && sources.length > 0 && sources[0].link) {
                 const sourceBtn = document.createElement('button');
                 sourceBtn.textContent = `Source (${sources.length})`;
-                sourceBtn.onclick = () => createSourceModal(sources); // Call the new modal function
+                sourceBtn.onclick = () => createSourceModal(sources);
                 buttonContainer.appendChild(sourceBtn);
             }
             messageDiv.appendChild(buttonContainer);
         }
         chatContainer.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
+        return messageDiv;
     }
 
-    // --- NEW FUNCTION TO CREATE THE SOURCE MODAL ---
+    // --- Modal Function ---
     function createSourceModal(sources) {
-        // Remove existing modal if any
         const existingModal = document.querySelector('.modal-overlay');
         if (existingModal) existingModal.remove();
 
-        // Create overlay
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay';
         
-        // Create content box
         const contentBox = document.createElement('div');
         contentBox.className = 'modal-content';
         
-        // Create close button
         const closeBtn = document.createElement('button');
         closeBtn.className = 'modal-close-btn';
         closeBtn.innerHTML = '&times;';
         closeBtn.onclick = () => overlay.classList.remove('active');
         
-        // Create title
         const title = document.createElement('h3');
         title.textContent = 'Sources Found:';
         title.style.marginBottom = '1rem';
@@ -182,38 +178,48 @@
         contentBox.appendChild(closeBtn);
         contentBox.appendChild(title);
         
-        // Add all the source links
         sources.forEach(source => {
             const link = document.createElement('a');
             link.href = source.link;
-            link.textContent = source.name; // Display the filename!
+            link.textContent = source.name;
             link.className = 'source-link';
-            link.target = '_blank'; // Open in a new tab
+            link.target = '_blank';
             contentBox.appendChild(link);
         });
 
         overlay.appendChild(contentBox);
         document.body.appendChild(overlay);
 
-        // Click overlay to close
         overlay.onclick = (e) => {
             if (e.target === overlay) {
                 overlay.classList.remove('active');
             }
         };
-
-        // Activate the modal
         setTimeout(() => overlay.classList.add('active'), 10);
     }
     
-    // --- Other utility functions (no changes) ---
-    function addLoadingMessage() { /* ... same as before ... */ }
-    function addErrorMessage(error) { /* ... same as before ... */ }
+    // --- FULL IMPLEMENTATION of UTILITY FUNCTIONS ---
+    function addLoadingMessage() {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message loading';
+        loadingDiv.textContent = 'AI is thinking...';
+        chatContainer.appendChild(loadingDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        return loadingDiv;
+    }
+
+    function addErrorMessage(error) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = `Error: ${error}. Please try again.`;
+        chatContainer.appendChild(errorDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
     
-    // --- UPDATED sendMessage FUNCTION ---
+    // --- Main sendMessage Function ---
     async function sendMessage(userMessage) {
         addMessage(userMessage, true);
-        const loadingMessage = addLoadingMessage();
+        const loadingMessage = addLoadingMessage(); // This will now work
         chatHistory.push({ role: 'user', content: userMessage });
 
         const requestBody = { query: userMessage, history: chatHistory };
@@ -224,7 +230,9 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody)
             });
-            loadingMessage.remove();
+            
+            loadingMessage.remove(); // This will now work
+            
             if (!response.ok) { throw new Error(`HTTP Error: ${response.status}`); }
 
             const fullResponse = await response.text();
@@ -233,15 +241,14 @@
 
             if (fullResponse.includes('---SOURCES---')) {
                 const parts = fullResponse.split('---SOURCES---');
-                aiResponse = parts[0];
+                aiResponse = parts[0].trim();
                 const sourcesString = parts[1];
                 
                 if(sourcesString) {
-                    // New parsing logic
                     sources = sourcesString.split(';;').map(s => {
                         const [name, link] = s.split('|');
                         return { name, link };
-                    });
+                    }).filter(s => s.link); // Filter out any empty results
                 }
             }
             
@@ -250,7 +257,7 @@
         } catch (error) {
             chatHistory.pop();
             console.error('Error:', error);
-            loadingMessage.remove();
+            if (loadingMessage) loadingMessage.remove(); // Safely remove if it exists
             addErrorMessage(error.message);
         }
     }
