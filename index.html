@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Search</title>
+    <!-- The library that will render Markdown formatting -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8f9fa; height: 100vh; overflow: hidden; }
@@ -26,54 +28,33 @@
         .send-button { background: #667eea; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
         .send-button:hover { background: #5a67d8; transform: scale(1.05); }
         .error-message { background: #fed7d7; color: #c53030; border-left: 3px solid #e53e3e; padding: 0.75rem 1rem; border-radius: 4px; margin: 0.5rem; }
-        /* --- ADD THIS CSS FOR THE MODAL --- */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
 
-.modal-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-}
+        /* --- CSS FOR THE SOURCE MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            background: white; padding: 2rem; border-radius: 8px; width: 90%;
+            max-width: 500px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-close-btn {
+            position: absolute; top: 10px; right: 15px; background: none; border: none;
+            font-size: 1.5rem; cursor: pointer;
+        }
+        .source-link { display: block; margin-bottom: 0.75rem; font-size: 1rem; word-wrap: break-word; }
 
-.modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 500px;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-.modal-close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-.source-link {
-    display: block;
-    margin-bottom: 0.75rem;
-    font-size: 1rem;
-    word-wrap: break-word;
-}
+        /* --- CSS FOR THE ACTION BUTTONS --- */
+        .action-button {
+            padding: 6px 12px; font-size: 0.8rem; font-weight: bold; border: none;
+            border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease;
+        }
+        .copy-btn { background-color: #e2e8f0; color: #4a5568; }
+        .copy-btn:hover { background-color: #cbd5e0; }
+        .source-btn { background-color: #667eea; color: white; }
+        .source-btn:hover { background-color: #5a67d8; }
     </style>
 </head>
 <body>
@@ -95,10 +76,9 @@
     </div>
 
 <script>
-    const N8N_WEBHOOK_URL = 'https://hraiit.app.n8n.cloud/webhook/b7fb711b-885b-4ca6-bfd2-62e8754a460a'; // <-- IMPORTANT: Make sure you put your real n8n webhook URL here
+    const N8N_WEBHOOK_URL = 'https://hraiit.app.n8n.cloud/webhook/b7fb711b-885b-4ca6-bfd2-62e8754a460a';
     let chatHistory = [];
     
-    // --- Element Getters ---
     const searchPage = document.getElementById('search-page');
     const chatPage = document.getElementById('chat-page');
     const firstSearchInput = document.getElementById('first-search-input');
@@ -106,35 +86,34 @@
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
 
-    // --- Event Listeners ---
     firstSearchInput.focus();
     firstSearchInput.addEventListener('keypress', handleFirstSearch);
     chatInput.addEventListener('keypress', handleChatInput);
     sendButton.addEventListener('click', handleSendClick);
 
-    // --- Handler Functions ---
     function handleFirstSearch(e) { if (e.key === 'Enter' && e.target.value.trim()) { switchToChat(); sendMessage(e.target.value.trim()); } }
     function handleChatInput(e) { if (e.key === 'Enter' && e.target.value.trim()) { sendMessage(e.target.value.trim()); e.target.value = ''; } }
     function handleSendClick() { const query = chatInput.value.trim(); if (query) { sendMessage(query); chatInput.value = ''; } }
     function switchToChat() { searchPage.style.display = 'none'; chatPage.style.display = 'flex'; chatInput.focus(); }
 
-    // --- Message Display Functions (with Button logic) ---
     function addMessage(content, isUser = false, sources = []) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
         
-        const textNode = document.createElement('p');
-        textNode.textContent = content;
+        const textNode = document.createElement('div');
+        // Use the 'marked' library to convert Markdown text to safe HTML
+        textNode.innerHTML = marked.parse(content);
         messageDiv.appendChild(textNode);
 
         if (!isUser) {
             const buttonContainer = document.createElement('div');
             buttonContainer.style.marginTop = '10px';
             buttonContainer.style.display = 'flex';
-            buttonContainer.style.gap = '5px';
+            buttonContainer.style.gap = '8px';
 
             const copyBtn = document.createElement('button');
             copyBtn.textContent = 'Copy';
+            copyBtn.className = 'action-button copy-btn';
             copyBtn.onclick = () => {
                 navigator.clipboard.writeText(content);
                 copyBtn.textContent = 'Copied!';
@@ -145,6 +124,7 @@
             if (sources && sources.length > 0 && sources[0].link) {
                 const sourceBtn = document.createElement('button');
                 sourceBtn.textContent = `Source (${sources.length})`;
+                sourceBtn.className = 'action-button source-btn';
                 sourceBtn.onclick = () => createSourceModal(sources);
                 buttonContainer.appendChild(sourceBtn);
             }
@@ -152,10 +132,8 @@
         }
         chatContainer.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
-        return messageDiv;
     }
 
-    // --- Modal Function ---
     function createSourceModal(sources) {
         const existingModal = document.querySelector('.modal-overlay');
         if (existingModal) existingModal.remove();
@@ -198,7 +176,6 @@
         setTimeout(() => overlay.classList.add('active'), 10);
     }
     
-    // --- FULL IMPLEMENTATION of UTILITY FUNCTIONS ---
     function addLoadingMessage() {
         const loadingDiv = document.createElement('div');
         loadingDiv.className = 'message loading';
@@ -216,10 +193,9 @@
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
     
-    // --- Main sendMessage Function ---
     async function sendMessage(userMessage) {
         addMessage(userMessage, true);
-        const loadingMessage = addLoadingMessage(); // This will now work
+        const loadingMessage = addLoadingMessage();
         chatHistory.push({ role: 'user', content: userMessage });
 
         const requestBody = { query: userMessage, history: chatHistory };
@@ -231,7 +207,7 @@
                 body: JSON.stringify(requestBody)
             });
             
-            loadingMessage.remove(); // This will now work
+            loadingMessage.remove();
             
             if (!response.ok) { throw new Error(`HTTP Error: ${response.status}`); }
 
@@ -248,7 +224,7 @@
                     sources = sourcesString.split(';;').map(s => {
                         const [name, link] = s.split('|');
                         return { name, link };
-                    }).filter(s => s.link); // Filter out any empty results
+                    }).filter(s => s.link && s.name);
                 }
             }
             
@@ -257,7 +233,7 @@
         } catch (error) {
             chatHistory.pop();
             console.error('Error:', error);
-            if (loadingMessage) loadingMessage.remove(); // Safely remove if it exists
+            if (loadingMessage) loadingMessage.remove();
             addErrorMessage(error.message);
         }
     }
