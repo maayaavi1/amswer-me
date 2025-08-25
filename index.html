@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Search</title>
+    <title>Answerbase</title> <!-- Changed Title -->
     <!-- The library that will render Markdown formatting -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -59,9 +59,11 @@
 </head>
 <body>
     <div id="search-page">
-        <div class="logo">AI Search</div>
+        <!-- CHANGE 1: Updated Logo Text -->
+        <div class="logo">Answerbase</div>
         <div class="search-container">
-            <input type="text" id="first-search-input" class="search-input" placeholder="Ask me anything..." autocomplete="off">
+            <!-- CHANGE 2: Updated Placeholder Text -->
+            <input type="text" id="first-search-input" class="search-input" placeholder="Get answers from your knowledge base" autocomplete="off">
         </div>
     </div>
     <div id="chat-page">
@@ -76,7 +78,8 @@
     </div>
 
 <script>
-    const N8N_WEBHOOK_URL = 'https://hraiit.app.n8n.cloud/webhook/b7fb711b-885b-4ca6-bfd2-62e8754a460a';
+    // CHANGE 3: Updated Production Webhook URL
+    const N8N_WEBHOOK_URL = 'https://answerbase.app.n8n.cloud/webhook/b7fb711b-885b-4ca6-bfd2-62e8754a460a';
     let chatHistory = [];
     
     const searchPage = document.getElementById('search-page');
@@ -239,4 +242,4 @@
     }
 </script>
 </body>
-</html>
+</html>```
